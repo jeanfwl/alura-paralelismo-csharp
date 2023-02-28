@@ -1,6 +1,7 @@
 ﻿using ByteBank.Core.Model;
 using ByteBank.Core.Repository;
 using ByteBank.Core.Service;
+using ByteBank.View.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,14 +45,19 @@ namespace ByteBank.View
 
             var inicio = DateTime.Now;
 
-            var resultado = await ConsolidarContas(contas);
+            var progresso = new ByteBankProgress<string>(str =>
+            {
+                PgsProgress.Value++;
+            });
+
+            var resultado = await ConsolidarContas(contas, progresso);
 
             var fim = DateTime.Now;
             AtualizarView(resultado, fim - inicio);
             BtnProcessar.IsEnabled = true;
         }
 
-        private async Task<string[]> ConsolidarContas(IEnumerable<ContaCliente> contas)
+        private async Task<string[]> ConsolidarContas(IEnumerable<ContaCliente> contas, IProgress<string> reportadorDeProgresso)
         {
             var taskSchedulerUI = TaskScheduler.FromCurrentSynchronizationContext();
 
@@ -60,10 +66,7 @@ namespace ByteBank.View
                 {
                     var resultado = r_Servico.ConsolidarMovimentacao(conta);
 
-                    Task.Factory.StartNew(() => { PgsProgress.Value++; }, 
-                        CancellationToken.None,
-                        TaskCreationOptions.None,
-                        taskSchedulerUI);
+                    reportadorDeProgresso.Report(resultado);
 
                     return resultado;
                 })
