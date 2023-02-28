@@ -45,7 +45,7 @@ namespace ByteBank.View
 
             var inicio = DateTime.Now;
 
-            var progresso = new ByteBankProgress<string>(str =>
+            var progresso = new Progress<string>(reporte =>
             {
                 PgsProgress.Value++;
             });
