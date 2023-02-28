@@ -23,6 +23,11 @@
                 Click="BtnProcessar_Click">
             Fazer Processamento
         </Button>
+        <ProgressBar Name="PgsProgress" 
+                    Height="23"
+                    DockPanel.Dock="Bottom"
+                    Minimum="0">
+        </ProgressBar>
         
         <!-- Resultado -->
         <TextBlock DockPanel.Dock="Top">Resultado:</TextBlock>
@@ -32,5 +37,6 @@
                   Background="Beige"
                   Margin="0 10">
         </ListView>
+
     </DockPanel>
 </Window>

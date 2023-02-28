@@ -38,7 +38,9 @@ namespace ByteBank.View
 
             var contas = r_Repositorio.GetContaClientes();
 
-            AtualizarView(new List<string>(), TimeSpan.Zero);
+            PgsProgress.Maximum = contas.Count();
+
+            LimparView();
 
             var inicio = DateTime.Now;
 
@@ -51,11 +53,29 @@ namespace ByteBank.View
 
         private async Task<string[]> ConsolidarContas(IEnumerable<ContaCliente> contas)
         {
+            var taskSchedulerUI = TaskScheduler.FromCurrentSynchronizationContext();
+
             var tasksContas = contas.Select(conta => 
-                Task.Factory.StartNew(() => r_Servico.ConsolidarMovimentacao(conta))
+                Task.Factory.StartNew(() =>
+                {
+                    var resultado = r_Servico.ConsolidarMovimentacao(conta);
+
+                    Task.Factory.StartNew(() => { PgsProgress.Value++; }, 
+                        CancellationToken.None,
+                        TaskCreationOptions.None,
+                        taskSchedulerUI);
+
+                    return resultado;
+                })
             );
 
             return await Task.WhenAll(tasksContas);
+        }
+
+        private void LimparView()
+        {
+            LstResultados.ItemsSource = null;
+            TxtTempo.Text = null;
         }
 
         private void AtualizarView(IEnumerable<String> result, TimeSpan elapsedTime)
